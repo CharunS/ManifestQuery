@@ -19,6 +19,7 @@
     <table class="table table-bordered" id="tb-diw">
         <thead>
           <tr>
+            <th>ลำดับ</th>
             <th>วันที่ขน</th>
             <th>ผู้ก่อกำเนิด</th>
             <th>ผู้รับกำจัด</th>
@@ -68,8 +69,6 @@
 
                 json = json.data;
 
-                console.log(json.length);
-
                 let tableBody = document.querySelector('#tb-diw tbody');
                 
                 tableBody.innerHTML = '';
@@ -78,40 +77,45 @@
                     alert(`Data not found.`);
                     return;
                 }
-
+                
+                let rowCount = 1;
                 for (let j in json) {
 
                     // Create a new row element
                     let newRow = document.createElement('tr');
                     
                     // Create and append new cells to the row
-                    for (let i = 0; i <= 4; i++) {
+                    for (let i = 0; i <= 5; i++) {
                         let newCell = document.createElement('td');
                         let _val = ``;
                         let subJson = ``;
                         switch(i) {
                             case 0:
-                                _val = json[j].create_date;
+                                _val = rowCount.toString();
                                 break;
                             case 1:
+                                _val = json[j].create_date;
+                                break;
+                            case 2:
                                 subJson = JSON.parse(json[j].diwg_id);
                                 _val = subJson.fid + ` - ` + subJson.fname;
                                 break;
-                            case 2:
+                            case 3:
                                 subJson = JSON.parse(json[j].diwp_id);
                                 _val = subJson.fid + ` - ` + subJson.fname;
                                 break;
-                            case 3:
+                            case 4:
                                 _val = json[j].total;
                                 break;
-                            case 4:
+                            case 5:
                                 _val = json[j].PROV+' - '+json[j].P_PROV;
                                 break;
                         }
                         newCell.textContent = `${_val}`;
                         newRow.appendChild(newCell);
                     }
-
+                    
+                    rowCount +=1;
                     tableBody.appendChild(newRow);
 
                 }
