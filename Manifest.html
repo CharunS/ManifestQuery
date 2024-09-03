@@ -25,6 +25,7 @@
             <th>ผู้รับกำจัด</th>
             <th>ปริมาณ</th>
             <th>ต้น - ปลาย ทาง</th>
+            <th>ข้อมูลรถและคนขับ</th>
           </tr>
         </thead>
         <tbody>
@@ -85,7 +86,7 @@
                     let newRow = document.createElement('tr');
                     
                     // Create and append new cells to the row
-                    for (let i = 0; i <= 5; i++) {
+                    for (let i = 0; i <= 6; i++) {
                         let newCell = document.createElement('td');
                         let _val = ``;
                         let subJson = ``;
@@ -109,6 +110,9 @@
                                 break;
                             case 5:
                                 _val = json[j].PROV+' - '+json[j].P_PROV;
+                                break;
+                            case 6:
+                                _val = json[j].customs_tran_no+' - '+json[j].driver_master;
                                 break;
                         }
                         newCell.textContent = `${_val}`;
