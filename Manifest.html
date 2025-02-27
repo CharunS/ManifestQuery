@@ -13,6 +13,9 @@
         <input type="text" class="form-control" placeholder="Factory ID [ Input only DIWP ]" id="txt-id">
         <button class="btn btn-success" type="button" onclick="findHandle()">Go</button>
     </div>
+    <div class="input-group mb-3">
+        <span id="lbl-load" style="color : red;">Loading...</span>
+    </div>
 </div>
 <div style="padding: 1%;">
 
@@ -20,12 +23,14 @@
         <thead>
           <tr>
             <th>ลำดับ</th>
+            <th>Manifest No.</th>
             <th>วันที่ขน</th>
             <th>ผู้ก่อกำเนิด</th>
             <th>ผู้รับกำจัด</th>
             <th>ปริมาณ</th>
             <th>ต้น - ปลาย ทาง</th>
             <th>ข้อมูลรถและคนขับ</th>
+            <th>ของเสีย</th>
           </tr>
         </thead>
         <tbody>
@@ -41,7 +46,9 @@
     function loadHtml(){
 
         let _txt = document.getElementById(`txt-id`);
+        let _lblLaod = document.getElementById(`lbl-load`);
         _txt.select();
+        _lblLaod.style.display = 'none';
 
     }
 
@@ -60,8 +67,12 @@
 
     async function searchManifest() {
 
+        let _lblLaod = document.getElementById(`lbl-load`);
         let _txt = document.getElementById(`txt-id`);
+
         if (_txt.value === '') return;
+
+        _lblLaod.style.display = 'inline';
 
         await fetch(`https://api-diwwaste.diw.go.th/manifest2?step=P&fid=${_txt.value}&isfac=1&limit=500&offset=0`) // Example URL
             .then(async (res) =>  {
@@ -86,7 +97,7 @@
                     let newRow = document.createElement('tr');
                     
                     // Create and append new cells to the row
-                    for (let i = 0; i <= 6; i++) {
+                    for (let i = 0; i <= 8; i++) {
                         let newCell = document.createElement('td');
                         let _val = ``;
                         let subJson = ``;
@@ -95,24 +106,30 @@
                                 _val = rowCount.toString();
                                 break;
                             case 1:
-                                _val = json[j].create_date;
+                                _val = json[j].mnf_no;
                                 break;
                             case 2:
+                                _val = json[j].create_date;
+                                break;
+                            case 3:
                                 subJson = JSON.parse(json[j].diwg_id);
                                 _val = subJson.fid + ` - ` + subJson.fname;
                                 break;
-                            case 3:
+                            case 4:
                                 subJson = JSON.parse(json[j].diwp_id);
                                 _val = subJson.fid + ` - ` + subJson.fname;
                                 break;
-                            case 4:
+                            case 5:
                                 _val = json[j].total;
                                 break;
-                            case 5:
+                            case 6:
                                 _val = json[j].PROV+' - '+json[j].P_PROV;
                                 break;
-                            case 6:
+                            case 7:
                                 _val = json[j].customs_tran_no+' - '+json[j].driver_master;
+                                break;
+                            case 8:
+                                _val = ``;
                                 break;
                         }
                         newCell.textContent = `${_val}`;
@@ -122,11 +139,40 @@
                     rowCount +=1;
                     tableBody.appendChild(newRow);
 
+                } 
+
+                for (let row of tableBody.rows) {
+                    
+                    let cell1 = row.cells[1];
+                    let cell8 = row.cells[8]; 
+                    
+                    let anchor = document.createElement('button');
+                    anchor.textContent = 'View';
+                    
+                    anchor.addEventListener('click', async function(event) {
+                        
+                        event.preventDefault();
+
+                        let wRes = await fetch(`https://api-diwwaste.diw.go.th/manifest2/manifestdtl?mnfno=${cell1.textContent}`); 
+
+                        if (wRes.ok) {
+                            let wData = await wRes.json();
+                            alert(JSON.stringify(wData, null, 2));
+                        } else {
+                            alert('Failed to fetch data: ' + wRes.status);
+                        }
+                      
+                    });
+
+                    cell8.appendChild(anchor);
+                
                 }
 
             })
-            .catch(() => {
-                alert('!Error');
+            .catch((e) => {
+                alert(`!Error : ${e}`);
+            }).finally(() => {
+                _lblLaod.style.display = 'none';
             });
 
     }
