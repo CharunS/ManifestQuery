@@ -50,6 +50,8 @@
         _txt.select();
         _lblLaod.style.display = 'none';
 
+        sessionStorage.clear();
+
     }
 
     document.getElementById('txt-id').addEventListener('keypress', function(event) {
@@ -152,12 +154,15 @@
                     anchor.addEventListener('click', async function(event) {
                         
                         event.preventDefault();
+                        
+                        sessionStorage.clear();
 
                         let wRes = await fetch(`https://api-diwwaste.diw.go.th/manifest2/manifestdtl?mnfno=${cell1.textContent}`); 
 
                         if (wRes.ok) {
                             let wData = await wRes.json();
-                            alert(JSON.stringify(wData, null, 2));
+                            sessionStorage.setItem("wData", JSON.stringify(wData));
+                            window.open('./Detail.html', '_blank');
                         } else {
                             alert('Failed to fetch data: ' + wRes.status);
                         }
