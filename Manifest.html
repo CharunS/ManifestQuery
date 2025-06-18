@@ -13,10 +13,20 @@
         <input type="text" class="form-control" placeholder="Factory ID [ Input only DIWP ]" id="txt-id">
         <button class="btn btn-success" type="button" onclick="findHandle()">Go</button>
     </div>
+    <div class="form-check" style="padding-left: 0% !important;">
+        <h6>แสดงตามภาค</h6>
+        <label><input type="checkbox" name="region" value="northern"> เหนือ </label>
+        <label><input type="checkbox" name="region" value="central"> กลาง </label>
+        <label><input type="checkbox" name="region" value="northeastern"> อีสาน </label>
+        <label><input type="checkbox" name="region" value="eastern"> ตะวันเอก </label>
+        <label><input type="checkbox" name="region" value="western"> ตะวันตก </label>
+        <label><input type="checkbox" name="region" value="southern"> ใต้ </label>
+    </div>
     <div class="input-group mb-3">
         <span id="lbl-load" style="color : red;">Loading...</span>
     </div>
 </div>
+
 <div style="padding: 1%;">
 
     <table class="table table-bordered" id="tb-diw">
@@ -28,7 +38,8 @@
             <th>ผู้ก่อกำเนิด</th>
             <th>ผู้รับกำจัด</th>
             <th>ปริมาณ</th>
-            <th>ต้น - ปลาย ทาง</th>
+            <th>ต้น ทาง</th>
+            <th>ปลาย ทาง</th>
             <th>ข้อมูลรถและคนขับ</th>
             <th>ของเสีย</th>
           </tr>
@@ -42,6 +53,74 @@
 </html>
 
 <script type="text/javascript">
+
+    const region = {
+                        "northern": [
+                            "เชียงราย", "เชียงใหม่", "น่าน", "พะเยา", "แพร่", "แม่ฮ่องสอน",
+                            "ลำปาง", "ลำพูน", "อุตรดิตถ์", "ตาก", "กำแพงเพชร", "พิษณุโลก", "พิจิตร", "สุโขทัย"
+                        ],
+                        "central": [
+                            "กรุงเทพมหานคร", "นครปฐม", "นนทบุรี", "ปทุมธานี", "พระนครศรีอยุธยา", "ลพบุรี",
+                            "สมุทรปราการ", "สมุทรสงคราม", "สมุทรสาคร", "สระบุรี", "สิงห์บุรี", "สุพรรณบุรี", "อ่างทอง", "ชัยนาท", "นครนายก"
+                        ],
+                        "northeastern": [
+                            "กาฬสินธุ์", "ขอนแก่น", "ชัยภูมิ", "นครพนม", "นครราชสีมา", "บึงกาฬ", "บุรีรัมย์",
+                            "มหาสารคาม", "มุกดาหาร", "ยโสธร", "ร้อยเอ็ด", "เลย", "สกลนคร", "สุรินทร์", "ศรีสะเกษ", "หนองคาย", "หนองบัวลำภู", "อำนาจเจริญ", "อุดรธานี", "อุบลราชธานี"
+                        ],
+                        "eastern": [
+                            "จันทบุรี", "ฉะเชิงเทรา", "ชลบุรี", "ตราด", "ปราจีนบุรี", "ระยอง", "สระแก้ว"
+                        ],
+                        "western": [
+                            "กาญจนบุรี", "ประจวบคีรีขันธ์", "เพชรบุรี", "ราชบุรี"
+                        ],
+                        "southern": [
+                            "กระบี่", "ชุมพร", "ตรัง", "นครศรีธรรมราช", "นราธิวาส", "ปัตตานี", "พังงา", "พัทลุง",
+                            "ภูเก็ต", "ระนอง", "สตูล", "สงขลา", "สุราษฎร์ธานี", "ยะลา"
+                        ]
+                    }
+        
+    let selRegion = [];
+    let selProvince = [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkboxes = document.querySelectorAll('input[name="region"]');
+            checkboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                selProvince = [];
+                selRegion = Array.from(document.querySelectorAll('input[name="region"]:checked'))
+                        .map(cb => cb.value);
+                for (let i in selRegion) {
+                    selProvince.push(region[selRegion[i]]);
+                }
+
+                selProvince = selProvince.reduce((acc,cur) => acc.concat(cur),[]);
+
+                const table = document.getElementById("tb-diw");
+                const tbody = table.querySelector("tbody");
+
+                Array.from(tbody.querySelectorAll("tr")).forEach(tr => {
+                    if (selProvince.length > 0) {
+                        
+                        const originCell = tr.cells[6]; 
+                        const originProvince = originCell?.textContent.trim();
+
+                        if (!selProvince.includes(originProvince)) {
+                            tr.style.display = 'none'; 
+                        } else {
+                            tr.style.display = 'table-row'; 
+                        }
+
+                    } else {
+
+                        tr.style.display = 'table-row'; 
+
+                    }
+                    
+                });
+
+            });
+        });
+    });
 
     function loadHtml(){
 
@@ -68,6 +147,8 @@
     }
 
     async function searchManifest() {
+
+        document.querySelectorAll('input[name="region"]').forEach(cb => cb.checked = false);
 
         let _lblLaod = document.getElementById(`lbl-load`);
         let _txt = document.getElementById(`txt-id`);
@@ -99,7 +180,7 @@
                     let newRow = document.createElement('tr');
                     
                     // Create and append new cells to the row
-                    for (let i = 0; i <= 8; i++) {
+                    for (let i = 0; i <= 9; i++) {
                         let newCell = document.createElement('td');
                         let _val = ``;
                         let subJson = ``;
@@ -125,12 +206,15 @@
                                 _val = json[j].total;
                                 break;
                             case 6:
-                                _val = json[j].PROV+' - '+json[j].P_PROV;
+                                _val = json[j].PROV;
                                 break;
                             case 7:
-                                _val = json[j].customs_tran_no+' - '+json[j].driver_master;
+                                _val = json[j].P_PROV;
                                 break;
                             case 8:
+                                _val = json[j].customs_tran_no+' - '+json[j].driver_master;
+                                break;
+                            case 9:
                                 _val = ``;
                                 break;
                         }
@@ -146,7 +230,7 @@
                 for (let row of tableBody.rows) {
                     
                     let cell1 = row.cells[1];
-                    let cell8 = row.cells[8]; 
+                    let cell9 = row.cells[9]; 
                     
                     let anchor = document.createElement('button');
                     anchor.textContent = 'View';
@@ -169,7 +253,7 @@
                       
                     });
 
-                    cell8.appendChild(anchor);
+                    cell9.appendChild(anchor);
                 
                 }
 
